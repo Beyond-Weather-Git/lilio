@@ -376,7 +376,8 @@ class Calendar:
             # loop through all the building blocks to
             for block in list_periods:
                 left_date += block.gap_dateoffset
-                right_date = left_date + block.length_dateoffset
+                # -1 day because now closed on both sides
+                right_date = left_date + block.length_dateoffset - DateOffset(days=1)
                 intervals.append(pd.Interval(left_date, right_date, closed="both"))
                 # update left date
                 left_date = right_date
@@ -385,7 +386,7 @@ class Calendar:
             right_date = self._get_anchor(year)
             # loop through all the building blocks to
             for block in list_periods:
-                right_date -= block.gap_dateoffset
+                right_date -= block.gap_dateoffset - DateOffset(days=1)
                 left_date = right_date - block.length_dateoffset
                 intervals.append(pd.Interval(left_date, right_date, closed="both"))
                 # update right date
