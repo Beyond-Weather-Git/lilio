@@ -168,8 +168,8 @@ def check_input_frequency(
     data_freq = infer_input_data_freq(data)
     calendar_freq = get_smallest_calendar_freq(calendar)
 
-    # if "label" in data.coords:
-    #     return
+    if "label" in data.coords:
+        return
 
     if calendar_freq < data_freq:
         raise ValueError(
