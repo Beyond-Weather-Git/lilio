@@ -1,4 +1,5 @@
 """Commonly used utility functions for Lilio."""
+
 import re
 import typing
 import warnings
@@ -107,12 +108,18 @@ def infer_input_data_freq(
     Returns:
         a pd.Timedelta
     """
-    if isinstance(data, (pd.Series, pd.DataFrame)):
+    if data.size == 1:
+        return pd.Timedelta("1d")
+
+    if isinstance(data, (pd.Series, pd.DataFrame)) and data.size >= 3:
         data_freq = pd.infer_freq(data.index)
         if data_freq is None:  # Manually infer the frequency
             data_freq = np.min(data.index.values[1:] - data.index.values[:-1])
     else:
-        data_freq = xr.infer_freq(data.time)
+        if data.size >= 3:
+            data_freq = xr.infer_freq(data.time)
+        else:
+            data_freq = None
         if data_freq is None:  # Manually infer the frequency
             data_freq = (data.time.values[1:] - data.time.values[:-1]).min()
 
@@ -243,9 +250,11 @@ def check_reserved_names(
             )
     elif isinstance(input_data, (xr.DataArray, xr.Dataset)):
         data_names = [
-            input_data.keys()
-            if isinstance(input_data, xr.Dataset)
-            else list(input_data.coords) + [input_data.name]
+            (
+                input_data.keys()
+                if isinstance(input_data, xr.Dataset)
+                else list(input_data.coords) + [input_data.name]
+            )
         ]
         if any(name in data_names for name in reserved_names_xr):
             raise ValueError(
