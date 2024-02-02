@@ -1,5 +1,6 @@
 """Tests for lilio's resample module.
 """
+
 import tempfile
 from pathlib import Path
 import numpy as np
@@ -287,13 +288,13 @@ class TestResample:
         years = list(range(2019, 2022))
         time_index = pd.to_datetime([f"{year}-02-01" for year in years])
         test_data = np.random.random(len(time_index))
-        initseries = pd.Series(test_data, index=time_index, name="data1")
+        series = pd.Series(test_data, index=time_index, name="data")
         # The calendar will skip the last timestep because of how pd.intervals are
         # defined (with left and right bounds). This is not a problem for resampling,
         # but it is a problem for the user to be aware of.
-        series = initseries._append(
-            pd.Series([np.nan], index=[pd.to_datetime("2022-02-01")])
-        )
+        # series = initseries._append(
+        #     pd.Series([np.nan], index=[pd.to_datetime("2022-02-01")])
+        # )
         cal = Calendar(anchor="02-01")
         cal.add_intervals("target", length="1d")
         cal.map_to_data(series)
