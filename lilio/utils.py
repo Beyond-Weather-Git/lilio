@@ -108,15 +108,20 @@ def infer_input_data_freq(
     Returns:
         a pd.Timedelta
     """
-    if data.size == 1:
+    if isinstance(data, xr.Dataset):
+        size = data.time.size
+    else:
+        size = data.size
+    if size == 1:
         return pd.Timedelta("1d")
 
-    if isinstance(data, (pd.Series, pd.DataFrame)) and data.size >= 3:
+    if isinstance(data, (pd.Series, pd.DataFrame)) and size >= 3:
+        # cannot infer when size < 3
         data_freq = pd.infer_freq(data.index)
         if data_freq is None:  # Manually infer the frequency
             data_freq = np.min(data.index.values[1:] - data.index.values[:-1])
     else:
-        if data.size >= 3:
+        if size >= 3:  # cannot infer when size < 3
             data_freq = xr.infer_freq(data.time)
         else:
             data_freq = None
