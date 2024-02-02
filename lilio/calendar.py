@@ -380,17 +380,17 @@ class Calendar:
                 right_date = left_date + block.length_dateoffset - pd.Timedelta(days=1)
                 intervals.append(pd.Interval(left_date, right_date, closed="both"))
                 # update left date
-                left_date = right_date
+                left_date = right_date + pd.Timedelta(days=1)
         else:
             # build from right to left
-            right_date = self._get_anchor(year)
+            right_date = self._get_anchor(year) - pd.Timedelta(days=1)
             # loop through all the building blocks to
             for block in list_periods:
                 right_date -= block.gap_dateoffset
                 left_date = right_date - block.length_dateoffset - pd.Timedelta(days=1)
                 intervals.append(pd.Interval(left_date, right_date, closed="both"))
                 # update right date
-                right_date = left_date
+                right_date = left_date - pd.Timedelta(days=1)
 
         return intervals
 
