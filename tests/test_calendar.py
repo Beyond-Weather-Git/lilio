@@ -114,7 +114,7 @@ class TestCalendar:
     def test_show(self, dummy_calendar):
         expected_calendar_repr = (
             "i_interval -1 1\n anchor_year \n 2021"
-            + "[2021-12-21, 2021-12-31) [2021-12-31, 2022-01-20)"
+            + "[2021-12-21, 2021-12-30] [2021-12-31, 2022-01-19]"
         )
         expected_calendar_repr = expected_calendar_repr.replace(" ", "")
         assert repr(dummy_calendar.show()).replace(" ", "") == expected_calendar_repr
@@ -127,10 +127,11 @@ class TestCalendar:
     def test_flat(self, dummy_calendar):
         expected = np.array(
             [
-                interval("2021-12-21", "2021-12-31", closed="left"),
-                interval("2021-12-31", "2022-01-20", closed="left"),
+                interval("2021-12-21", "2021-12-30", closed="both"),
+                interval("2021-12-31", "2022-01-19", closed="both"),
             ]
         )
+
         assert np.array_equal(dummy_calendar.flat, expected)
 
     def test_add_intervals(self, dummy_calendar):
@@ -138,9 +139,9 @@ class TestCalendar:
         dummy_calendar = dummy_calendar.map_years(2021, 2021)
         expected = np.array(
             [
-                interval("2021-12-21", "2021-12-31", closed="left"),
-                interval("2021-12-31", "2022-01-20", closed="left"),
-                interval("2022-01-20", "2022-02-19", closed="left"),
+                interval("2021-12-21", "2021-12-30", closed="both"),
+                interval("2021-12-31", "2022-01-19", closed="both"),
+                interval("2022-01-20", "2022-02-18", closed="both"),
             ]
         )
         assert np.array_equal(dummy_calendar.flat, expected)
@@ -150,10 +151,10 @@ class TestCalendar:
         dummy_calendar = dummy_calendar.map_years(2021, 2021)
         expected = np.array(
             [
-                interval("2021-12-21", "2021-12-31", closed="left"),
-                interval("2021-12-31", "2022-01-20", closed="left"),
-                interval("2022-01-20", "2022-02-19", closed="left"),
-                interval("2022-02-19", "2022-03-21", closed="left"),
+                interval("2021-12-21", "2021-12-30", closed="both"),
+                interval("2021-12-31", "2022-01-19", closed="both"),
+                interval("2022-01-20", "2022-02-18", closed="both"),
+                interval("2022-02-19", "2022-03-20", closed="both"),
             ]
         )
         assert np.array_equal(dummy_calendar.flat, expected)
@@ -168,9 +169,9 @@ class TestCalendar:
         dummy_calendar = dummy_calendar.map_years(2021, 2021)
         expected = np.array(
             [
-                interval("2021-12-21", "2021-12-31", closed="left"),
-                interval("2021-12-31", "2022-01-20", closed="left"),
-                interval("2022-01-30", "2022-02-19", closed="left"),
+                interval("2021-12-21", "2021-12-30", closed="both"),
+                interval("2021-12-31", "2022-01-19", closed="both"),
+                interval("2022-01-30", "2022-02-18", closed="both"),
             ]
         )
         assert np.array_equal(dummy_calendar.flat, expected)
@@ -180,9 +181,9 @@ class TestCalendar:
         dummy_calendar = dummy_calendar.map_years(2021, 2021)
         expected = np.array(
             [
-                interval("2021-12-16", "2021-12-26", closed="left"),
-                interval("2021-12-21", "2021-12-31", closed="left"),
-                interval("2021-12-31", "2022-01-20", closed="left"),
+                interval("2021-12-16", "2021-12-25", closed="both"),
+                interval("2021-12-21", "2021-12-30", closed="both"),
+                interval("2021-12-31", "2022-01-19", closed="both"),
             ]
         )
         assert np.array_equal(dummy_calendar.flat, expected)
@@ -198,8 +199,8 @@ class TestCalendar:
         # expected intervals
         expected = np.array(
             [
-                interval("2020-12-21", "2020-12-31", closed="left"),
-                interval("2020-12-31", "2021-01-20", closed="left"),
+                interval("2020-12-21", "2020-12-30", closed="both"),
+                interval("2020-12-31", "2021-01-19", closed="both"),
             ]
         )
         assert np.array_equal(calendar.flat, expected)
@@ -209,10 +210,11 @@ class TestCalendar:
         cal.add_intervals("target", "1M")
         cal.add_intervals("precursor", "10M")
         cal.map_years(2020, 2020)
+
         expected = np.array(
             [
-                interval("2020-02-01", "2020-12-01", closed="left"),
-                interval("2020-12-01", "2021-01-01", closed="left"),
+                interval("2020-01-31", "2020-11-30", closed="both"),
+                interval("2020-12-01", "2020-12-31", closed="both"),
             ]
         )
         assert np.array_equal(cal.flat, expected)
@@ -290,12 +292,14 @@ class TestMap:
         expected = np.array(
             [
                 [
-                    interval("2021-07-04", "2021-12-31"),
-                    interval("2021-12-31", "2022-06-29"),
+                    interval("2021-07-04", "2021-12-30", closed="both"),
+                    interval("2021-12-31", "2022-06-28", closed="both"),
                 ],
                 [
-                    interval("2020-07-04", "2020-12-31"),
-                    interval("2020-12-31", "2021-06-29"),  # notice the leap day
+                    interval("2020-07-04", "2020-12-30", closed="both"),
+                    interval(
+                        "2020-12-31", "2021-06-28", closed="both"
+                    ),  # notice the leap day
                 ],
             ]
         )
@@ -307,8 +311,8 @@ class TestMap:
         expected = np.array(
             [
                 [
-                    interval("2020-07-04", "2020-12-31"),
-                    interval("2020-12-31", "2021-06-29"),
+                    interval("2020-07-04", "2020-12-30", closed="both"),
+                    interval("2020-12-31", "2021-06-28", closed="both"),
                 ]
             ]
         )
@@ -325,8 +329,8 @@ class TestMap:
         expected = np.array(
             [
                 [
-                    interval("2020-04-18", "2020-10-15"),
-                    interval("2020-10-15", "2021-04-13"),
+                    interval("2020-04-18", "2020-10-14", closed="both"),
+                    interval("2020-10-15", "2021-04-12", closed="both"),
                 ]
             ]
         )
@@ -344,8 +348,8 @@ class TestMap:
         expected = np.array(
             [
                 [
-                    interval("2021-01-01", "2021-06-30"),
-                    interval("2021-06-30", "2021-12-27"),
+                    interval("2021-01-01", "2021-06-29", closed="both"),
+                    interval("2021-06-30", "2021-12-26", closed="both"),
                 ]
             ]
         )
@@ -364,12 +368,14 @@ class TestMap:
         expected = np.array(
             [
                 [
-                    interval("2020-04-18", "2020-10-15"),
-                    interval("2020-10-15", "2021-04-13"),
+                    interval("2020-04-18", "2020-10-14", closed="both"),
+                    interval("2020-10-15", "2021-04-12", closed="both"),
                 ],
                 [
-                    interval("2019-04-18", "2019-10-15"),
-                    interval("2019-10-15", "2020-04-12"),  # notice the leap day
+                    interval("2019-04-18", "2019-10-14", closed="both"),
+                    interval(
+                        "2019-10-15", "2020-04-11", closed="both"
+                    ),  # notice the leap day
                 ],
             ]
         )
@@ -387,8 +393,8 @@ class TestMap:
         expected = np.array(
             [
                 [
-                    interval("2020-04-18", "2020-10-15"),
-                    interval("2020-10-15", "2021-04-13"),
+                    interval("2020-04-18", "2020-10-14", closed="both"),
+                    interval("2020-10-15", "2021-04-12", closed="both"),
                 ]
             ]
         )
@@ -405,8 +411,8 @@ class TestMap:
 
         expected = np.array(
             [
-                interval("2020-04-18", "2020-10-15"),
-                interval("2020-10-15", "2021-04-13"),
+                interval("2020-04-18", "2020-10-14", closed="both"),
+                interval("2020-10-15", "2021-04-12", closed="both"),
             ]
         )
 
