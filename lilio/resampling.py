@@ -324,11 +324,11 @@ def resample(
         >>> cal = cal.map_to_data(input_data)
         >>> bins = lilio.resample(cal, input_data)
         >>> bins # doctest: +NORMALIZE_WHITESPACE
-            anchor_year  i_interval                  interval   data  is_target
-        2019          -1  [2019-07-04, 2019-12-30]   14.5      False
-        2019           1  [2019-12-31, 2020-06-27]  119.5       True
-        2020          -1  [2020-07-04, 2020-12-30]  305.5      False
-        2020           1  [2020-12-31, 2021-06-28]  485.5       True
+           anchor_year  i_interval                  interval   data  is_target
+        0         2019          -1  [2019-07-04, 2019-12-30]   14.5      False
+        1         2019           1  [2019-12-31, 2020-06-27]  119.5       True
+        2         2020          -1  [2020-07-04, 2020-12-30]  305.5      False
+        3         2020           1  [2020-12-31, 2021-06-28]  485.5       True
     """
     if calendar.mapping is None:
         raise ValueError("Generate a calendar map before calling resample")
