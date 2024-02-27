@@ -33,7 +33,8 @@ Example:
     >>> calendar.show() # doctest: +NORMALIZE_WHITESPACE
     i_interval                         -1                         1
     anchor_year
-    2020         [2020-07-04, 2020-12-31)  [2020-12-31, 2021-06-29)
+    2020         [2020-07-04, 2020-12-30]  [2020-12-31, 2021-06-28]
+
 
     Get the 180-day periods leading up to New Year's eve for 2020 - 2022 inclusive.
 
