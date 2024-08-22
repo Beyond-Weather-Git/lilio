@@ -1,4 +1,5 @@
 """Lilio's main Calendar module."""
+
 import copy
 import re
 import warnings
@@ -376,20 +377,20 @@ class Calendar:
             # loop through all the building blocks to
             for block in list_periods:
                 left_date += block.gap_dateoffset
-                right_date = left_date + block.length_dateoffset
-                intervals.append(pd.Interval(left_date, right_date, closed="left"))
+                right_date = left_date + block.length_dateoffset - pd.Timedelta(days=1)
+                intervals.append(pd.Interval(left_date, right_date, closed="both"))
                 # update left date
-                left_date = right_date
+                left_date = right_date + pd.Timedelta(days=1)
         else:
             # build from right to left
-            right_date = self._get_anchor(year)
+            right_date = self._get_anchor(year) - pd.Timedelta(days=1)
             # loop through all the building blocks to
             for block in list_periods:
                 right_date -= block.gap_dateoffset
-                left_date = right_date - block.length_dateoffset
-                intervals.append(pd.Interval(left_date, right_date, closed="left"))
+                left_date = right_date - block.length_dateoffset + pd.Timedelta(days=1)
+                intervals.append(pd.Interval(left_date, right_date, closed="both"))
                 # update right date
-                right_date = left_date
+                right_date = left_date - pd.Timedelta(days=1)
 
         return intervals
 
@@ -491,7 +492,8 @@ class Calendar:
         if self._map_year(max_year).iloc[0].right > self._last_timestamp:
             max_year -= 1
         # first date check
-        while self._map_year(min_year).iloc[-1].right <= self._first_timestamp:
+        # adaptation now that intervals are defined as closed="both".
+        while self._map_year(min_year).iloc[-1].right < self._first_timestamp:
             min_year += 1
 
         # map year(s) and generate year realized advent calendar

@@ -1,4 +1,5 @@
 """Commonly used utility functions for Lilio."""
+
 import re
 import typing
 import warnings
@@ -107,27 +108,43 @@ def infer_input_data_freq(
     Returns:
         a pd.Timedelta
     """
-    if isinstance(data, (pd.Series, pd.DataFrame)):
+    if isinstance(data, (xr.DataArray, xr.Dataset)):
+        size = data.time.size
+    else:
+        size = data.size
+    if size == 1:
+        return pd.Timedelta("1d")
+
+    if isinstance(data, (pd.Series, pd.DataFrame)) and size >= 3:
+        # cannot infer when size < 3
         data_freq = pd.infer_freq(data.index)
         if data_freq is None:  # Manually infer the frequency
             data_freq = np.min(data.index.values[1:] - data.index.values[:-1])
     else:
-        data_freq = xr.infer_freq(data.time)
+        if size >= 3:  # cannot infer when size < 3
+            data_freq = xr.infer_freq(data.time)
+        else:
+            data_freq = None
         if data_freq is None:  # Manually infer the frequency
             data_freq = (data.time.values[1:] - data.time.values[:-1]).min()
 
     if isinstance(data_freq, str):
-        data_freq.replace("-", "")  # Get the absolute frequency
-
         if not re.match(r"\d+\D", data_freq):  # infer_freq can return "d" for "1d".
             data_freq = "1" + data_freq
+
+        # anoying switch from "2M" to "2ME" format in pandas > 2.2.
+        # We will need to adapt to this in the future.
+        if len(data_freq) in [3, 4] and data_freq[1:] in ["ME", "MS"]:
+            data_freq = data_freq.replace(data_freq[1:], "M")
 
         data_freq = (  # Deal with monthly timedelta case
             replace_month_length(data_freq) if data_freq[-1] == "M" else data_freq
         )
 
         data_freq = (  # Deal with yearly timedelta case
-            replace_year_length(data_freq) if "A" in data_freq else data_freq
+            replace_year_length(data_freq)
+            if "A" in data_freq or "Y" in data_freq
+            else data_freq
         )
 
     return pd.Timedelta(data_freq)
@@ -168,8 +185,9 @@ def check_input_frequency(
     data_freq = infer_input_data_freq(data)
     calendar_freq = get_smallest_calendar_freq(calendar)
 
-    if "label" in data.coords:
-        return
+    if data_freq == pd.Timedelta("365.25d") and calendar_freq == pd.Timedelta("1d"):
+        # Allow yearly (one-datapoint-per-year) data to be resampled to daily data.
+        return None
 
     if calendar_freq < data_freq:
         raise ValueError(
@@ -237,9 +255,11 @@ def check_reserved_names(
             )
     elif isinstance(input_data, (xr.DataArray, xr.Dataset)):
         data_names = [
-            input_data.keys()
-            if isinstance(input_data, xr.Dataset)
-            else list(input_data.coords) + [input_data.name]
+            (
+                input_data.keys()
+                if isinstance(input_data, xr.Dataset)
+                else list(input_data.coords) + [input_data.name]
+            )
         ]
         if any(name in data_names for name in reserved_names_xr):
             raise ValueError(

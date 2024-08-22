@@ -1,4 +1,5 @@
 """The implementation of the resampling methods for use with the Calendar."""
+
 import typing
 from typing import Callable
 from typing import Literal
@@ -244,20 +245,17 @@ def _resample_dataset(
 
 
 @overload
-def resample(calendar: Calendar, input_data: xr.Dataset) -> xr.Dataset:
-    ...
+def resample(calendar: Calendar, input_data: xr.Dataset) -> xr.Dataset: ...
 
 
 @overload
-def resample(calendar: Calendar, input_data: xr.DataArray) -> xr.DataArray:
-    ...
+def resample(calendar: Calendar, input_data: xr.DataArray) -> xr.DataArray: ...
 
 
 @overload
 def resample(
     calendar: Calendar, input_data: Union[pd.Series, pd.DataFrame]
-) -> pd.DataFrame:
-    ...
+) -> pd.DataFrame: ...
 
 
 def resample(
@@ -326,11 +324,11 @@ def resample(
         >>> cal = cal.map_to_data(input_data)
         >>> bins = lilio.resample(cal, input_data)
         >>> bins # doctest: +NORMALIZE_WHITESPACE
-            anchor_year  i_interval                  interval   data  is_target
-        0          2019          -1  [2019-07-04, 2019-12-31)   14.5      False
-        1          2019           1  [2019-12-31, 2020-06-28)  119.5       True
-        2          2020          -1  [2020-07-04, 2020-12-31)  305.5      False
-        3          2020           1  [2020-12-31, 2021-06-29)  485.5       True
+           anchor_year  i_interval                  interval   data  is_target
+        0         2019          -1  [2019-07-04, 2019-12-30]   14.5      False
+        1         2019           1  [2019-12-31, 2020-06-27]  119.5       True
+        2         2020          -1  [2020-07-04, 2020-12-30]  305.5      False
+        3         2020           1  [2020-12-31, 2021-06-28]  485.5       True
     """
     if calendar.mapping is None:
         raise ValueError("Generate a calendar map before calling resample")

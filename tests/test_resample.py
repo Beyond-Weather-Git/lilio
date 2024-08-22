@@ -1,5 +1,6 @@
 """Tests for lilio's resample module.
 """
+
 import tempfile
 from pathlib import Path
 import numpy as np
@@ -259,26 +260,46 @@ class TestResample:
         for att in expected_attrs:
             assert att in resampled.attrs.keys()
 
-    def test_resample_with_year_freq(
+    def test_resample_with_one_datapoint_per_year(
         self,
-        dummy_calendar_with_year_freq,
     ):
         """Testing resampling when you have only 1 datapoint per year."""
         years = list(range(2019, 2022))
         time_index = pd.to_datetime([f"{year}-02-01" for year in years])
         test_data = np.random.random(len(time_index))
-        initseries = pd.Series(test_data, index=time_index, name="data1")
-        # The calendar will skip the last timestep because of how pd.intervals are
-        # defined (with left and right bounds). This is not a problem for resampling,
-        # but it is a problem for the user to be aware of.
-        series = initseries._append(
-            pd.Series([np.nan], index=[pd.to_datetime("2022-02-01")])
-        )
-        cal = dummy_calendar_with_year_freq
+        series = pd.Series(test_data, index=time_index, name="data")
+        cal = Calendar(anchor="02-01")
+        cal.add_intervals("target", length="1d")
         cal.map_to_data(series)
         cal.get_intervals()
         resampled = resample(cal, series)
         assert all(np.equal(test_data, resampled.data.values)), "Data not equal."
+
+    def test_resample_with_one_datapoint_in_total(
+        self,
+    ):
+        """Testing resampling when you have only 1 datapoint per year."""
+        coords = {
+            "time": pd.to_datetime(["2024-10-01"]),
+            "preprocess": ["y_true", "trend", "clim"],
+            "label": (
+                ("preprocess", "time"),
+                np.array([["Total US"], ["Total US"], ["Total US"]]),
+            ),
+        }
+        array = xr.DataArray(
+            np.random.randn(3, 1),
+            coords=coords,
+            dims=["preprocess", "time"],
+        )
+        cal = Calendar(anchor="10-01")
+        cal.add_intervals("target", length="1d")
+        cal.map_to_data(array)
+        cal.get_intervals()
+        resampled = resample(cal, array)
+        assert all(
+            np.equal(array.squeeze(), resampled.values.squeeze())
+        ), "Data not equal."
 
 
 TOO_LOW_FREQ_ERR = r".*lower time resolution than the calendar.*"
