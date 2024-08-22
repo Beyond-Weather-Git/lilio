@@ -108,7 +108,7 @@ def infer_input_data_freq(
     Returns:
         a pd.Timedelta
     """
-    if isinstance(data, xr.Dataset):
+    if isinstance(data, (xr.DataArray, xr.Dataset)):
         size = data.time.size
     else:
         size = data.size
